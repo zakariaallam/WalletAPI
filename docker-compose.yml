@@ -1,0 +1,45 @@
+services:
+  backend:
+    build: .
+    container_name: projet_WalletAPI 
+    expose:
+      - 9000
+    volumes:
+      - ".:/var/www/html"
+    networks:
+      - stay_sase_network   
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ".:/var/www/html" 
+      - "./nginx.conf:/etc/nginx/nginx.conf"     
+    depends_on:
+      - backend  
+    networks:
+      - stay_sase_network  
+
+  db:
+    image: mysql:latest   
+    container_name: mysql_container
+    environment:
+       MYSQL_ROOT_PASSWORD: "root123"
+       MYSQL_DATABASE: "StayEase"
+    volumes:
+      - mydata:/var/lib/mysql
+    ports:
+      - 3306:3306     
+    networks:
+      - stay_sase_network
+
+volumes:
+  mydata:
+
+networks:
+  stay_sase_network:
+    driver: bridge      
+
+    
