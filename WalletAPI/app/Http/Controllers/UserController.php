@@ -12,7 +12,7 @@ class UserController extends Controller
     public function register(Request $request){
         
          $request->validate([
-            'name' => 'required|string|min:3[max:255',
+            'name' => 'required|string|min:3|max:255',
             'email' => 'required|email|unique:users|max:255',
             'password' => 'required|string|min:8|confirmed|max:255',
          ]);
@@ -27,15 +27,16 @@ class UserController extends Controller
 
          return response()->json([
             'success' => true,
-            'message'=> 'create successfoly'
+            'message'=> 'create successfoly',
+            'token' => $token
          ],201);
     }
 
     public function login(Request $request){
 
          $validate = $request->validate([
-            'email' => $request->email,
-            'password' => $request->password
+            'email' => 'required|email',
+            'password' => 'required|string'
          ]);
 
          if(!Auth::attempt($validate)){
