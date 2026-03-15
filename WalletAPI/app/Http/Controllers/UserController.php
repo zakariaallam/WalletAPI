@@ -2,33 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateUserAction;
+use App\DTO\UserDto;
+use App\Http\Requests\UserRequest;
 use App\Models\User;
-use GrahamCampbell\ResultType\Success;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function register(Request $request){
-        
-         $request->validate([
-            'name' => 'required|string|min:3|max:255',
-            'email' => 'required|email|unique:users|max:255',
-            'password' => 'required|string|min:8|confirmed|max:255',
-         ]);
+   public function __construct(private CreateUserAction $action){}
 
-         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password
-         ]);
-
-         $token = $user->createToken('token')->plainTextToken;
-
+    public function register(UserRequest $request){
+         $createUser = $this->action->createUser($request->validated());
+         $dto = new UserDto($createUser['user']->name,$createUser['user']->email,$createUser['user']->id);
          return response()->json([
             'success' => true,
             'message'=> 'create successfoly',
-            'token' => $token
+            'user' => $dto,
+            'token' => $createUser['token']
          ],201);
     }
 
@@ -41,7 +33,7 @@ class UserController extends Controller
 
          if(!Auth::attempt($validate)){
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'email or password inccorect'
             ],401);
          }
@@ -51,7 +43,7 @@ class UserController extends Controller
          $token = $user->createToken('token')->plainTextToken;
 
          return response()->json([
-            'status' => ' success',
+            'status' => true,
             'message' => 'login successfully',
             'data' => $user
          ],201);

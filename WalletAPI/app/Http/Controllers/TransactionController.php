@@ -98,10 +98,25 @@ class TransactionController extends Controller
     }
     public function transfer(Request $request ,$id){
         $request->validate([
-            'montant' => 'required|numeric|min:0'
+            'montant' => 'required|numeric|min:0',
+            'divise' => 'required|string'
         ]);
 
+        $wallet_on = wallet::where('id',$id)->first();
+        $wallet_on->solde -= $request->montant;
         
+        $wallet = wallet::where('divise',$request->divise)->first();
+        $wallet->solde += $request->montant;
+
+        Transaction::create([
+               'amount' => $request->montant,
+                'type' => 'transfer',
+                'wallet_id' => $wallet_on->id
+        ]);
+        return response()->json([
+            'status' => true,
+            'message' => 'transfer successfully'
+        ]);
     }
     public function transactions($id){
 
